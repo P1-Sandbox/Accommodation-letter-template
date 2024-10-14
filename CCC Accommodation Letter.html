@@ -1,0 +1,321 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+
+		<title>Accommodation Notification</title>
+
+		<style type="text/css">
+			body{
+				background-color: #FFFFFF;
+				text-align: left;
+				text-decoration: none;
+				font-family: Helvetica, Arial, sans-serif;
+				font-weight: normal;
+				font-size: 10pt;
+				color: #000000;
+				margin: 0in;
+				padding: 0px;
+				white-space: normal;
+			}
+
+		/* Heading styles*/
+			h1{
+				font-weight: bold;
+				font-size: 18pt;
+				text-align: left;
+			}
+			#note h1{
+				font-weight: bold;
+				font-size: 14pt;
+				text-align: center
+			}
+			h2{
+				font-weight: bold;
+				font-size: 12pt;
+				text-decoration: underline;
+			}
+			#finish{
+				display:block;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+		/* Text styles*/
+			p{
+				padding: 0px;
+				line-height: 12pt;
+			}
+			a:link, a:visited, a:hover, a:active{
+				color:#000000;
+				text-decoration:none;
+			}
+
+		/* Div styles*/
+			#main, #note{
+				width: 6.5in;
+				margin: 0px auto 0px;
+			}
+			#header, #body{
+				width: 100%;
+				display: table;
+				clear: both;
+				padding-top: 10px;
+			}
+			#header .image{
+				width: 25%;
+				float: left; 
+			}
+			#header .title {
+				width: 66%; 
+				float: left;
+			}
+			#note{
+				border: 1px solid #E80048;
+				background-color: #FFCCCB;
+				color: #E80048;
+				padding: 0px 6px 14px;
+			}
+
+		/* Table styles*/
+			table th {
+				padding-left: 8px;
+				padding-right: 8px;
+				padding-bottom: 8px;
+				border-bottom: 2px solid black;
+			}
+			table td{
+				padding-left:  8px;
+				padding-right: 8px;
+			}
+			#info{
+				width: 100%;
+				font-weight:bold;
+			}
+			#info .first{
+				width: 120px;
+			}
+			#accommodations{
+				width: 100%;
+				border-collapse: collapse;
+				border-spacing: 0px;
+			}
+			#accommodations td{
+				border-bottom: 1px solid #CCCCCC;
+				padding: 6px 8px;
+			}
+			#signatures{
+				width: 100%;
+				height: .25in;
+			}
+			#signatures .first, #signatures .third{
+				width: 45%;
+			}
+			#signatures .second{
+				width: 10%;
+			}
+			#signatures .line{
+				border-bottom: 1px solid #000000;
+			}
+		</style>
+
+		<script type="text/javascript" src="/js/qdbEF.js"></script>
+		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script type="text/javascript">
+		$('document').ready(function() {
+			qdbEF();
+
+			/**
+			 * Name: Paul Trimor 
+			 * Date: 09/04/18
+			 * Description: Load API_GenResultsTable results as a javascript array. 
+			 * 		using the array, build html table from the results.  
+			 **/ 
+
+			// Get student id field object 
+			var studentID = field["Student ID"]; 
+			var studentID_fid = 29; 
+			var accomHide_fid = 26; 
+			var accommodationTable = 'bh3u8m36w'; 
+
+			console.log("/db/" + accommodationTable + "?a=API_GenResultsTable&query={" + 
+					studentID_fid + ".EX." + studentID + "}AND{" +
+					accomHide_fid + ".EX.0}&jsa=1");
+
+			// Loads API_GenResultsTable response data 
+			$.ajax({
+				url: 
+					"/db/" + accommodationTable + "?a=API_GenResultsTable&query={" + 
+					studentID_fid + ".EX." + studentID + "}AND{" +
+					accomHide_fid + ".EX.0}&jsa=1", 
+				type: 'GET', 
+				async: false // Makes qdb_data accessible 
+			})
+
+			// Generate Accommodations table using data from API_GenResultsTable
+			var table = $("#accommodations"); 
+			$.each(qdb_data, function( key, value) {
+				var category = value[3];
+				var accommodation = value[2]; 
+				var description = value[4]; 
+
+				var tableRow = "<tr>"; 
+				tableRow += "<td><input type=\"checkbox\" name=\"accomm_" + key + "\" checked></td>"; 
+				tableRow += "<td>" + accommodation + "</td>"; 
+				tableRow += "<td>" + category + "</td>"; 
+				tableRow += "<td style='max-width: 50%' >" + description + "</td>"; 
+				tableRow += "</tr>"; 
+
+				table.append(tableRow); 				
+			}); 
+
+			/**
+			 * Name: Paul Trimor
+			 * Date: 09/04/18
+			 * Description: Finalize the accommodation letter when the "Finish" button is clicked
+			 **/ 
+			$("#finish").click(function() {				
+				// Removed Checkbox column 
+				$('#checkboxColumn').remove();
+				$('input[name=\"accom_0\"').parent().remove(); 
+
+				// Remove unchecked rows & checkboxes 
+				$('input:checkbox:not(:checked)').parent().parent().remove();
+				$('input:checked').parent().remove();
+
+				// Remove Notes section. 
+				$("#note").remove(); 
+
+			}); 
+				
+			/**
+			* Name: Nathan Cayo
+			* Date: 11/15/23
+			* Description: Hides the additional comment if the additional comment field is not filled
+			**/
+			var additional_comment_check = $('#additional_comment_check');
+			if (additional_comment_check.text() == 'No' || additional_comment_check.text() == '0' || additional_comment_check.text() == null) {
+				$('#additional_comment_text').hide(); 
+			}
+
+			$('#checkboxColumn input').change(function(){
+					var checkboxes = $("td input:checkbox"); 
+
+					if($(this).prop('checked')) {
+						console.log("checkbox Unchecked");
+						checkboxes.prop('checked', true);
+					}
+					else {
+						console.log("checkbox Checked");
+						checkboxes.prop('checked', false);
+
+					}
+				});
+
+		});
+		</script>
+	</head>
+ 
+	<body>
+		<div id="main">	
+			<div id="header">
+				<div class="image">
+					<a href="http://www.cccco.edu/" title="California Community Colleges Chancellor's Office">
+						<img src="https://amacsam.quickbase.com/up/bnuuc9j4q/g/rb/eg/va/1200px-California_Community_Colleges_System_logo.svg.png" width="120" alt="The logo for California Community Colleges"/><br/>
+					</a>
+				</div>
+				<div class="title">
+					<h1>California Community Colleges<br> Disability Services</h1>
+				</div>
+			</div>
+			<div id="body">
+				<table id="info">
+					<tr>
+						<td class="first">Student ID:</td>
+						<td class="second">~Student ID~</td>
+					</tr>
+					<tr>
+						<td class="first">Student Name:</td>
+						<td class="second">~Name~</td>
+					</tr>
+				</table>
+
+				<p>The student above has been authorized by our office to receive academic accommodations. The following accommodations are authorized to be used in your course:</p>
+
+				<table id="accommodations">
+					<thead>
+						<tr>
+							<th id="checkboxColumn">
+								<input type="checkbox" id="selectAll" checked> 
+							</th>
+							<th>Accommodation</th>
+							<th>Category</th>
+							<th>Description</th>
+						</tr>
+					</thead>					
+				</table>
+
+				<table style="table-layout:fixed; padding: 15px 0px">
+					<tr id="additional_comment_text" >
+						<td class="first" style="width: 20%"><strong>Additional Comments:</strong></td>
+						<td class="second" style="width: 80%">~Additional Comments (text)~</td>
+					<tr>
+				</table>
+				<div hidden id="additional_comment_check">~Additional Comments (check)~</div>
+
+				<p>Accommodations are required by law under Section 504 of the Rehabilitation Act and the Americans with Disabilities Act (ADA). Accommodations are provided to minimize the impact of the functional limitations of a disability in the classroom. If you have questions about a student’s accommodations, please call the Access Resource Center, at 831-646-4070, and ask to speak with a counselor.</p>
+
+				<p>All information regarding a disability is confidential. Students with authorized accommodations meet with an instructor to inform them of the approved accommodations they will be using in a course. Students are encouraged by our office to discuss their accommodations with the instructor; however, the student is <b>not</b> required to disclose or discuss specific disability-related information.</p><br/>
+
+				<table id="signatures">
+					<tr>
+						<td class="first line">&nbsp;</td>
+						<td class="second">&nbsp;</td>
+						<td class="third line">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="first">Counselor / Specialist Signature</td>
+						<td class="second">&nbsp;</td>
+						<td class="third">Date</td>
+					</tr>
+					<tr>
+						<td class="first line">&nbsp;<br/><br/></td>
+						<td class="second">&nbsp;</td>
+						<td class="third line">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="first">Student Signature</td>
+						<td class="second">&nbsp;</td>
+						<td class="third">Date</td>
+					</tr>
+					<tr>
+						<td class="first line">&nbsp;<br/><br/></td>
+						<td class="second">&nbsp;</td>
+						<td class="third line">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="first">Instructor Signature</td>
+						<td class="second">&nbsp;</td>
+						<td class="third">Date</td>
+					</tr>
+				</table><br/>
+			</div>
+		</div>
+
+		<div id="note">
+
+		<h1>Instructions</h1>
+
+		<p>Use the checkboxes to indicate which accommodations you would like to appear on the letter. Once you have completed your selections, press Finish to finalize the letter.</p><br/>
+
+		<button type="button" id="finish">Finish</button>
+
+		</div>
+	<form>
+   
+	</form>
+	</body>
+
+</html>
