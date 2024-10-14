@@ -1,5 +1,3 @@
-# accommodation-letter-template
-A template for generating accommodation letters used by the California Community Colleges Disability Services.
 # Accommodation Letter Template
 
 This repository contains a template for generating academic accommodation letters used by the California Community Colleges Disability Services. The template integrates with **QuickBase**, allowing dynamic retrieval and display of student accommodations from QuickBase tables. This helps ensure compliance with Section 504 of the Rehabilitation Act and the Americans with Disabilities Act (ADA) by outlining the accommodations authorized for students.
